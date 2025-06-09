@@ -6,13 +6,13 @@ export const postsRouter = express.Router();
 //findAll
 postsRouter.get('/', async (req, res) => {
   console.log('[GET] /posts route is being called');
-  const posts = await postsService.findAll();
+  const posts = await postsService.findAllWithAuthors(); //instead of findAll()
   res.json(posts); //express will send status 200 automatically
 });
 //findById
 postsRouter.get('/:id', async (req, res) => {
   const { id } = req.params; //destructering from the objekt re.params
-  const post = await postsService.findById(id); //id is here just a string
+  const post = await postsService.findByIdWithAuthor(id); //id is here just a string
   if (!post) {
     res.status(404).send({ message: 'post not found' });
     return;

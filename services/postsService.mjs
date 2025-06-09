@@ -10,8 +10,34 @@ async function getPostsCollection() {
 export const postsService = {
   //methoden syntax -> alternative arrow syntax: findAll: async () => {}
   async findAll() {
+    //not used
     const posts = await getPostsCollection();
     const result = await posts.find({}).toArray();
+    console.log(JSON.stringify(result, null, 2));
+    return result;
+  },
+  async findAllWithAuthors() {
+    //used instead of findAll() - in posts.mjs angepasst
+    //with backend aggregation with collection authors
+    const posts = await getPostsCollection();
+    const result = await posts
+      .aggregate([
+        {
+          $lookup: {
+            from: 'authors',
+            localField: 'authorId',
+            foreignField: '_id',
+            as: 'authorInfo',
+          },
+        },
+        {
+          $unwind: {
+            path: '$authorInfo', // Das Array-Feld, das "entpackt" werden soll
+            preserveNullAndEmptyArrays: true, // Wichtig: Behält Posts bei, auch wenn kein Autor gefunden wurde (authorInfo wird dann null)
+          },
+        },
+      ])
+      .toArray();
     console.log(JSON.stringify(result, null, 2));
     return result;
   },
@@ -19,6 +45,36 @@ export const postsService = {
     const posts = await getPostsCollection();
     const query = { _id: ObjectId.createFromHexString(id) };
     const result = await posts.findOne(query);
+    return result ?? undefined;
+  },
+  //used instead of findById(id) - in posts.mjs angepasst
+  //with backend aggregation to also get the author for a post
+  async findByIdWithAuthor(id) {
+    const posts = await getPostsCollection();
+    const objectId = { _id: ObjectId.createFromHexString(id) };
+
+    const result = await posts
+      .aggregate([
+        {
+          $match: { _id: objectId },
+        },
+        {
+          $lookup: {
+            from: 'authors',
+            localField: 'authorId',
+            foreignField: '_id',
+            as: 'authorInfo',
+          },
+        },
+        {
+          $unwind: {
+            path: '$authorInfo',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ])
+      .next(); //mit next() wird das nächste Dokument vom Cursor abgerufen
+
     return result ?? undefined;
   },
   async create(post) {
