@@ -1,11 +1,13 @@
 import express from 'express';
 import { postsRouter } from './routes/posts.mjs';
+import { authorsRouter } from './routes/authors.mjs';
 
 const app = express();
 const apiPath = '/api/v1';
 
 app.use(express.json());
 app.use(apiPath + '/posts', postsRouter);
+app.use(apiPath + '/authors', authorsRouter);
 
 async function run() {
   const config = await import(

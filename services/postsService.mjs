@@ -51,7 +51,7 @@ export const postsService = {
   //with backend aggregation to also get the author for a post
   async findByIdWithAuthor(id) {
     const posts = await getPostsCollection();
-    const objectId = { _id: ObjectId.createFromHexString(id) };
+    const objectId = ObjectId.createFromHexString(id);
 
     const result = await posts
       .aggregate([
