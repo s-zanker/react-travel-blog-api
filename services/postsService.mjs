@@ -79,7 +79,10 @@ export const postsService = {
   },
   async create(post) {
     const posts = await getPostsCollection();
-    const { acknowledged, insertedId } = await posts.insertOne(post);
+    const postToInsert = { ...post };
+    postToInsert.authorId = ObjectId.createFromHexString(post.authorId); //authorId String -> ObjectId
+    console.log('new Post authorId: ', postToInsert.authorId);
+    const { acknowledged, insertedId } = await posts.insertOne(postToInsert);
     return acknowledged ? insertedId.toHexString() : undefined;
   },
   async update(updatePost, id) {
